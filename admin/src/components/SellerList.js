@@ -14,10 +14,6 @@ function SellerList() {
   const adminToken = localStorage.getItem('adminToken'); // your saved token
 
   // 🔹 Load sellers on component mount
-  useEffect(() => {
-    fetchSellers();
-  }, []);
-
   const fetchSellers = async () => {
     try {
       const res = await axios.get('http://localhost:4000/api/seller/list', {
@@ -34,6 +30,11 @@ function SellerList() {
       alert('Error fetching sellers. Make sure you are logged in as admin.');
     }
   };
+
+  useEffect(() => {
+    fetchSellers();
+    // eslint-disable-next-line
+  }, [fetchSellers]);
 
   // 🔹 Add a new seller
   const addSeller = async (e) => {
