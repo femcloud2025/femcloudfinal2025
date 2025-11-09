@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 function SellerList() {
@@ -14,7 +14,7 @@ function SellerList() {
   const adminToken = localStorage.getItem('adminToken'); // your saved token
 
   // 🔹 Load sellers on component mount
-  const fetchSellers = async () => {
+  const fetchSellers = useCallback(async () => {
     try {
       const res = await axios.get('http://localhost:4000/api/seller/list', {
         headers: { Authorization: `Bearer ${adminToken}` }
@@ -29,11 +29,10 @@ function SellerList() {
       console.error('Failed to fetch sellers:', err);
       alert('Error fetching sellers. Make sure you are logged in as admin.');
     }
-  };
+  }, [adminToken]);
 
   useEffect(() => {
     fetchSellers();
-    // eslint-disable-next-line
   }, [fetchSellers]);
 
   // 🔹 Add a new seller
