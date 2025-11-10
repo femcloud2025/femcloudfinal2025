@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-//import logo from '../assets/femcloud-logo.jpg';
+
 function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -12,7 +12,7 @@ function LoginPage() {
 
     try {
       // Send login request to backend
-      const response = await axios.post('http://localhost:4000/api/admin', {
+      const response = await axios.post('https://femcloudfinal2025.onrender.com/api/admin', {
         email,
         password
       });
@@ -35,11 +35,9 @@ function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-indigo-100 via-purple-100 to-pink-100">
       <div className="p-8 bg-white shadow-lg rounded-lg w-full max-w-md">
-       
         <h1 className="text-4xl font-bold text-center mb-6 text-indigo-600 font-display tracking-tight">
           FemCloud Admin
         </h1>
-
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <label className="block text-gray-700 font-medium mb-2">Email</label>
@@ -52,7 +50,6 @@ function LoginPage() {
               required
             />
           </div>
-
           <div>
             <label className="block text-gray-700 font-medium mb-2">Password</label>
             <input
@@ -64,7 +61,6 @@ function LoginPage() {
               required
             />
           </div>
-
           <button
             type="submit"
             className="w-full py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg transition"
