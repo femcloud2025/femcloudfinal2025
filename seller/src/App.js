@@ -14,25 +14,18 @@ import Navbar from "./Navbar";
 import ProductForm from "./ProductForm";
 import ProductList from "./ProductList";
 
-// Updated backendUrl for Render API:
 const backendUrl = "https://femcloudfinal2025.onrender.com/api/seller/product";
 
 const ProtectedRoute = ({ token }) => {
   const location = useLocation();
-  if (!token) return <Navigate to="/login" state={{ from: location }} replace />;
-  return <Outlet />;
+  return token ? <Outlet /> : <Navigate to="/login" state={{ from: location }} replace />;
 };
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("sellerToken"));
-  const [sellerId, setSellerId] = useState(() => {
-    const id = localStorage.getItem("sellerId");
-    console.log("Initial sellerId from localStorage:", id);
-    return id;
-  });
+  const [sellerId, setSellerId] = useState(localStorage.getItem("sellerId"));
   const [products, setProducts] = useState([]);
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [editingProductId, setEditingProductId] = useState(null);
+  const [editingProduct, setEditingProduct] = useState(null);
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -41,37 +34,18 @@ const App = () => {
     whatsappNumber: "",
   });
 
-  useEffect(() => {
-    console.log("Current sellerId:", sellerId);
-    console.log("Current token:", token);
-  }, [sellerId, token]);
-
   const fetchProducts = useCallback(async () => {
-    if (!token || !sellerId) {
-      console.log("Cannot fetch products: missing token or sellerId");
-      return;
-    }
-    
+    if (!token || !sellerId) return;
     try {
-      console.log("Fetching products for seller:", sellerId);
       const res = await axios.post(
         `${backendUrl}/list/${sellerId}`,
         {},
-        { 
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          } 
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log("Products API response:", res.data);
-      
-      const productsData = res.data.data || res.data || [];
-      setProducts(Array.isArray(productsData) ? productsData : []);
+      const data = res.data?.data || [];
+      setProducts(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Error fetching products:", err);
-      console.error("Error details:", err.response?.data);
-      setProducts([]);
+      console.error("Error fetching products:", err.response?.data || err.message);
     }
   }, [token, sellerId]);
 
@@ -80,37 +54,23 @@ const App = () => {
   }, [fetchProducts]);
 
   const onLogin = (tok, id) => {
-    console.log("Login received - token:", tok, "sellerId:", id);
-    
-    if (!id || id === "undefined") {
-      console.error("Invalid sellerId received during login:", id);
-      alert("Login failed: Invalid seller ID");
+    if (!tok || !id) {
+      alert("Login failed. Invalid credentials.");
       return;
     }
-    
-    setToken(tok);
-    setSellerId(id);
     localStorage.setItem("sellerToken", tok);
     localStorage.setItem("sellerId", id);
-    
-    setForm({
-      name: "",
-      description: "",
-      price: "",
-      category: "",
-      whatsappNumber: "",
-    });
+    setToken(tok);
+    setSellerId(id);
+    fetchProducts();
   };
 
   const onLogout = () => {
-    localStorage.removeItem("sellerToken");
-    localStorage.removeItem("sellerId");
-    localStorage.removeItem("sellerName");
+    localStorage.clear();
     setToken(null);
     setSellerId(null);
     setProducts([]);
-    setEditingIndex(null);
-    setEditingProductId(null);
+    setEditingProduct(null);
     setForm({
       name: "",
       description: "",
@@ -124,9 +84,8 @@ const App = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const onEditProduct = (product, index) => {
-    setEditingIndex(index);
-    setEditingProductId(product._id);
+  const onEditProduct = (product) => {
+    setEditingProduct(product);
     setForm({
       name: product.name,
       description: product.description,
@@ -138,46 +97,22 @@ const App = () => {
 
   const onSubmitProduct = async (formData) => {
     try {
-      console.log("Submitting product data...");
-      console.log("Current sellerId:", sellerId);
-      
-      if (!sellerId || sellerId === "undefined") {
-        alert("Error: Invalid seller ID. Please log in again.");
-        return;
-      }
-
-      // Create clean FormData to avoid duplication
       const cleanFormData = new FormData();
       for (let [key, value] of formData.entries()) {
-        if (key !== "sellerId" && key !== "seller") {
-          cleanFormData.append(key, value);
-        }
+        cleanFormData.append(key, value);
       }
       cleanFormData.append("sellerId", sellerId);
 
-      if (editingIndex !== null && editingProductId) {
-        // Include product ID in URL, not FormData
-      }
-
-      console.log("Clean FormData contents:");
-      for (let [key, value] of cleanFormData.entries()) {
-        console.log(key + ": " + value);
-      }
-
-      const url = editingIndex !== null 
-        ? `${backendUrl}/update/${editingProductId}` 
+      const url = editingProduct
+        ? `${backendUrl}/update/${editingProduct._id}`
         : `${backendUrl}/add`;
 
-      const response = await axios.post(url, cleanFormData, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-        },
+      await axios.post(url, cleanFormData, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log("Product saved successfully:", response.data);
-      
-      setEditingIndex(null);
-      setEditingProductId(null);
+      alert(editingProduct ? "Product updated successfully!" : "Product added successfully!");
+      setEditingProduct(null);
       setForm({
         name: "",
         description: "",
@@ -185,55 +120,34 @@ const App = () => {
         category: "",
         whatsappNumber: "",
       });
-      
       fetchProducts();
-      
-      alert(editingIndex !== null ? "Product updated successfully!" : "Product added successfully!");
-    } catch (error) {
-      console.error("Product save failed:", error);
-      console.error("Error response:", error.response?.data);
-      
-      if (error.response?.data?.errors) {
-        alert(`Validation Error: ${JSON.stringify(error.response.data.errors)}`);
-      } else if (error.response?.data?.message) {
-        alert(`Error: ${error.response.data.message}`);
-      } else {
-        alert(`Error: ${error.message}`);
-      }
+    } catch (err) {
+      console.error("Error saving product:", err.response?.data || err.message);
+      alert(err.response?.data?.message || "Something went wrong.");
     }
   };
 
-  const onDeleteProduct = async (index) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) {
-      return;
-    }
+  const onDeleteProduct = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+
     try {
-      const productId = products[index]._id;
-      console.log("Deleting product:", productId);
-      
       await axios.post(
         `${backendUrl}/delete`,
-        { id: productId },
-        { 
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          } 
+        { id },
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      
       alert("Product deleted successfully!");
       fetchProducts();
-    } catch (error) {
-      console.error("Delete failed:", error);
-      console.error("Error response:", error.response?.data);
-      alert(`Delete failed: ${error.response?.data?.message || error.message}`);
+    } catch (err) {
+      console.error("Delete failed:", err.response?.data || err.message);
+      alert("Failed to delete product.");
     }
   };
 
   const handleCancelEdit = () => {
-    setEditingIndex(null);
-    setEditingProductId(null);
+    setEditingProduct(null);
     setForm({
       name: "",
       description: "",
@@ -255,11 +169,7 @@ const App = () => {
           <Route
             path="/login"
             element={
-              token ? (
-                <Navigate to="/products" replace />
-              ) : (
-                <SellerLogin onLogin={onLogin} />
-              )
+              token ? <Navigate to="/products" replace /> : <SellerLogin onLogin={onLogin} />
             }
           />
           <Route element={<ProtectedRoute token={token} />}>
@@ -270,38 +180,26 @@ const App = () => {
                   <h1 className="text-3xl font-bold mb-6 text-gray-800">
                     Manage Products
                   </h1>
-                  {sellerId && (
-                    <div className="mb-4 p-3 bg-blue-50 rounded border border-blue-200">
-                      <p className="text-sm text-blue-700">
-                        <strong>Seller ID:</strong> {sellerId}
-                      </p>
-                      <p className="text-sm text-blue-600 mt-1">
-                        <strong>Status:</strong> {editingIndex !== null ? "Editing Product" : "Adding New Product"}
-                      </p>
-                    </div>
-                  )}
+
                   <ProductForm
                     form={form}
                     onChange={onChange}
                     onSubmit={onSubmitProduct}
                     onCancel={handleCancelEdit}
-                    editing={editingIndex !== null}
+                    editing={!!editingProduct}
                   />
+
                   <ProductList
                     products={products}
                     onEdit={onEditProduct}
-                    onDelete={onDeleteProduct}
+                    onDelete={(index) => onDeleteProduct(products[index]._id)}
                   />
                 </div>
               }
             />
             <Route path="/profile" element={<SellerProfilePage />} />
-            <Route path="*" element={<Navigate to="/products" replace />} />
           </Route>
-          <Route
-            path="*"
-            element={<Navigate to={token ? "/products" : "/login"} replace />}
-          />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </Router>
