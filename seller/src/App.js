@@ -14,7 +14,8 @@ import Navbar from "./Navbar";
 import ProductForm from "./ProductForm";
 import ProductList from "./ProductList";
 
-const backendUrl = "http://localhost:4000/api/seller/product";
+// Updated backendUrl for Render API:
+const backendUrl = "https://femcloudfinal2025.onrender.com/api/seller/product";
 
 const ProtectedRoute = ({ token }) => {
   const location = useLocation();
@@ -170,7 +171,6 @@ const App = () => {
       const response = await axios.post(url, cleanFormData, {
         headers: { 
           Authorization: `Bearer ${token}`,
-          // Let axios set Content-Type for FormData
         },
       });
 
