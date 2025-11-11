@@ -51,21 +51,21 @@ const App = () => {
       console.log("Cannot fetch products: missing token or sellerId");
       return;
     }
-    
+
     try {
       console.log("Fetching products for seller:", sellerId);
       const res = await axios.post(
         `${backendUrl}/list/${sellerId}`,
         {},
-        { 
-          headers: { 
+        {
+          headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          } 
+            "Content-Type": "application/json",
+          },
         }
       );
       console.log("Products API response:", res.data);
-      
+
       const productsData = res.data.data || res.data || [];
       setProducts(Array.isArray(productsData) ? productsData : []);
     } catch (err) {
@@ -81,18 +81,18 @@ const App = () => {
 
   const onLogin = (tok, id) => {
     console.log("Login received - token:", tok, "sellerId:", id);
-    
+
     if (!id || id === "undefined") {
       console.error("Invalid sellerId received during login:", id);
       alert("Login failed: Invalid seller ID");
       return;
     }
-    
+
     setToken(tok);
     setSellerId(id);
     localStorage.setItem("sellerToken", tok);
     localStorage.setItem("sellerId", id);
-    
+
     setForm({
       name: "",
       description: "",
@@ -140,7 +140,7 @@ const App = () => {
     try {
       console.log("Submitting product data...");
       console.log("Current sellerId:", sellerId);
-      
+
       if (!sellerId || sellerId === "undefined") {
         alert("Error: Invalid seller ID. Please log in again.");
         return;
@@ -164,18 +164,19 @@ const App = () => {
         console.log(key + ": " + value);
       }
 
-      const url = editingIndex !== null 
-        ? `${backendUrl}/update/${editingProductId}` 
-        : `${backendUrl}/add`;
+      const url =
+        editingIndex !== null
+          ? `${backendUrl}/update/${editingProductId}`
+          : `${backendUrl}/add`;
 
       const response = await axios.post(url, cleanFormData, {
-        headers: { 
+        headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
       console.log("Product saved successfully:", response.data);
-      
+
       setEditingIndex(null);
       setEditingProductId(null);
       setForm({
@@ -185,16 +186,22 @@ const App = () => {
         category: "",
         whatsappNumber: "",
       });
-      
+
       fetchProducts();
-      
-      alert(editingIndex !== null ? "Product updated successfully!" : "Product added successfully!");
+
+      alert(
+        editingIndex !== null
+          ? "Product updated successfully!"
+          : "Product added successfully!"
+      );
     } catch (error) {
       console.error("Product save failed:", error);
       console.error("Error response:", error.response?.data);
-      
+
       if (error.response?.data?.errors) {
-        alert(`Validation Error: ${JSON.stringify(error.response.data.errors)}`);
+        alert(
+          `Validation Error: ${JSON.stringify(error.response.data.errors)}`
+        );
       } else if (error.response?.data?.message) {
         alert(`Error: ${error.response.data.message}`);
       } else {
@@ -210,24 +217,26 @@ const App = () => {
     try {
       const productId = products[index]._id;
       console.log("Deleting product:", productId);
-      
+
       await axios.post(
         `${backendUrl}/delete`,
         { id: productId },
-        { 
-          headers: { 
+        {
+          headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          } 
+            "Content-Type": "application/json",
+          },
         }
       );
-      
+
       alert("Product deleted successfully!");
       fetchProducts();
     } catch (error) {
       console.error("Delete failed:", error);
       console.error("Error response:", error.response?.data);
-      alert(`Delete failed: ${error.response?.data?.message || error.message}`);
+      alert(
+        `Delete failed: ${error.response?.data?.message || error.message}`
+      );
     }
   };
 
@@ -270,16 +279,23 @@ const App = () => {
                   <h1 className="text-3xl font-bold mb-6 text-gray-800">
                     Manage Products
                   </h1>
+
+                  {/* --- Commented out sellerId + status block ---
                   {sellerId && (
                     <div className="mb-4 p-3 bg-blue-50 rounded border border-blue-200">
                       <p className="text-sm text-blue-700">
                         <strong>Seller ID:</strong> {sellerId}
                       </p>
                       <p className="text-sm text-blue-600 mt-1">
-                        <strong>Status:</strong> {editingIndex !== null ? "Editing Product" : "Adding New Product"}
+                        <strong>Status:</strong>{" "}
+                        {editingIndex !== null
+                          ? "Editing Product"
+                          : "Adding New Product"}
                       </p>
                     </div>
                   )}
+                  --- End of commented block --- */}
+
                   <ProductForm
                     form={form}
                     onChange={onChange}
