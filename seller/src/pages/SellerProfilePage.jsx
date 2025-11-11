@@ -20,7 +20,7 @@ const SellerProfilePage = () => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:4000/api/seller/profile", {
+        const res = await axios.get("https://femcloudfinal2025.onrender.com/api/seller/profile", {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.data.success) {
@@ -71,7 +71,7 @@ const SellerProfilePage = () => {
       if (form.password.trim() !== "") updateData.password = form.password;
 
       const res = await axios.put(
-        "http://localhost:4000/api/seller/profile",
+        "https://femcloudfinal2025.onrender.com/api/seller/profile",
         updateData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
