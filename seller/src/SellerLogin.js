@@ -16,7 +16,7 @@ const SellerLogin = ({ onLogin }) => {
     setSuccess("");
 
     try {
-      const response = await axios.post("http://localhost:4000/api/login/seller", {
+      const response = await axios.post("https://femcloudfinal2025.onrender.com/api/login/seller", {
         sellerName: form.sellerName,
         password: form.password,
       });
