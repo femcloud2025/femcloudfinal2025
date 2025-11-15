@@ -39,6 +39,17 @@ export default function ProductCard({
       <div className="mt-4">
         <div className="font-bold">{product.name}</div>
         <div className="text-green-800 font-semibold">{product.price}</div>
+        {/* Seller Details */}
+      {product.seller && (
+        <div className="mt-2 text-sm text-gray-700">
+          <div>
+            <span className="font-semibold">Seller:</span> {product.seller.sellerName}
+          </div>
+          <div>
+            <span className="font-semibold">Shop:</span> {product.seller.shopName}
+          </div>
+        </div>
+      )}
         {(expanded && product.description) && (
           <div className="text-sm text-gray-600 mt-2">{product.description}</div>
         )}
