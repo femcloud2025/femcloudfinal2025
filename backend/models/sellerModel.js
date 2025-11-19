@@ -7,6 +7,7 @@ const sellerSchema = new mongoose.Schema({
   description: { type: String, required: true },
   whatsappNumber:{type:String,required:true,unique:true},
   gstNumber:{type:String},
+  sellerUPIID:{type:String},
  // products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }]  // Reference to product documents
 }, { minimize: false });
 
