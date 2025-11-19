@@ -178,7 +178,7 @@ export const listProducts=async (req, res) => {
 export const listAllProducts=async (req, res) => {
   try {
     // Populate seller info if you want seller details (name, etc.)
-    const products = await productModel.find().populate("seller",'sellerName shopName whatsappNumber');
+    const products = await productModel.find().populate("seller");
     res.json(products);
   } catch (err) {
     res.status(500).json({ message: "Fetch products failed", error: err.message });
